@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            padding: 30px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+
+        .top-bar h2 {
+            color: #333;
+            font-size: 20px;
+        }
+
+        .top-bar-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            padding: 9px 20px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #357abd;
+        }
+
+        .btn-secondary {
+            padding: 9px 20px;
+            background-color: white;
+            color: #4a90e2;
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f0f6ff;
+        }
+
+        .btn-danger {
+            padding: 6px 14px;
+            background-color: white;
+            color: #e24a4a;
+            border: 2px solid #e24a4a;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-danger:hover {
+            background-color: #fff0f0;
+        }
+
+        .filter-card {
+            background-color: white;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+
+        .filter-card h3 {
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .filter-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-row label {
+            font-size: 14px;
+            color: #555;
+            min-width: 100px;
+        }
+
+        input[type="date"],
+        input[type="month"] {
+            padding: 7px 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        input[type="date"]:focus,
+        input[type="month"]:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        .workout-card {
+            background-color: white;
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 16px;
+        }
+
+        .workout-card h4 {
+            color: #333;
+            font-size: 17px;
+            margin-bottom: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+
+        th {
+            background-color: #4a90e2;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 9px 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            color: #444;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #f9f9f9;
+        }
+
+        .no-workouts {
+            text-align: center;
+            color: #888;
+            font-size: 15px;
+            margin-top: 40px;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <h2>💪 Welcome, {{ current_user.username }}!</h2>
+        <div class="top-bar-buttons">
+            <a href="{{ url_for('add_workout') }}" class="btn-primary">+ Add Workout</a>
+            <a href="{{ url_for('logout') }}" class="btn-secondary">Logout</a>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="filter-card">
+        <h3>Filter Workouts</h3>
+        <form method="GET" action="{{ url_for('dashboard') }}">
+            <div class="filter-row">
+                <label>Date Range:</label>
+                <input type="date" name="start_date"> to
+                <input type="date" name="end_date">
+                <button type="submit" class="btn-primary">Filter</button>
+            </div>
+            <div class="filter-row">
+                <label>By Month:</label>
+                <input type="month" name="month">
+                <button type="submit" class="btn-primary">Filter</button>
+            </div>
+            <div class="filter-row">
+                <a href="{{ url_for('dashboard') }}" class="btn-secondary">Clear Filters</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Workouts -->
+    <h3 style="color: #333; margin-bottom: 16px;">Your Workouts</h3>
+
+    {% if workouts %}
+        {% for workout in workouts %}
+            <div class="workout-card">
+                <h4>{{ workout.name }} — {{ workout.date }}</h4>
+                <table>
+                    <tr>
+                        <th>Exercise</th>
+                        <th>Sets</th>
+                        <th>Reps</th>
+                        <th>Weight (lbs)</th>
+                    </tr>
+                    {% for ex in workout.exercises %}
+                    <tr>
+                        <td>{{ ex.name }}</td>
+                        <td>{{ ex.sets }}</td>
+                        <td>{{ ex.reps }}</td>
+                        <td>{{ ex.weight if ex.weight else '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                <a href="{{ url_for('delete_workout', workout_id=workout.id) }}" class="btn-danger">Delete</a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="no-workouts">No workouts yet. You should totally add one!</p>
+    {% endif %}
+
+</body>
+</html>

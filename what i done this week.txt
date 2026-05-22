@@ -1,0 +1,3 @@
+added a function so that the user is able to add their workout date specfically. Instead of a hardcoded today's date.
+filtrs added (by month works by writing something like this: 2026-05)
+Stylized htmls

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Workout</title>
+</head>
+<body>
+    <h2>Log a Workout</h2>
+    <form method="POST">
+        <label>Workout Name (e.g. "Leg Day"):</label><br>
+        <input type="text" name="workout_name" required><br><br>
+
+        <label>Date:</label><br>
+        <input type="date" name="workout_date" value="{{ today }}" required><br><br>
+
+        <h3>Exercises</h3>
+        <table id="exercise-table" border="1" cellpadding="5">
+            <tr>
+                <th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight (optional)</th>
+            </tr>
+            <tr>
+                <td><input type="text" name="exercise_name" placeholder="e.g. Bench Press"></td>
+                <td><input type="number" name="sets" min="1" placeholder="3"></td>
+                <td><input type="number" name="reps" min="1" placeholder="10"></td>
+                <td><input type="number" name="weight" step="0.5" placeholder="135"></td>
+            </tr>
+        </table>
+
+        <br>
+        <button type="button" onclick="addRow()">+ Add Exercise</button>
+        <br><br>
+        <button type="submit">Save Workout</button>
+    </form>
+
+    <br>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+
+    <script>
+        function addRow() {
+            const table = document.getElementById("exercise-table");
+            const row = table.insertRow();
+            row.innerHTML = `
+                <td><input type="text" name="exercise_name" placeholder="e.g. Squat"></td>
+                <td><input type="number" name="sets" min="1" placeholder="3"></td>
+                <td><input type="number" name="reps" min="1" placeholder="10"></td>
+                <td><input type="number" name="weight" step="0.5" placeholder="135"></td>
+            `;
+        }
+    </script>
+</body>
+</html>

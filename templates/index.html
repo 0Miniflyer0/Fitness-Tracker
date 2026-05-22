@@ -2,21 +2,98 @@
 <html>
 <head>
     <title>Fitness Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .hero {
+            text-align: center;
+            background-color: white;
+            padding: 60px 50px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            padding: 11px 28px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #357abd;
+        }
+
+        .btn-secondary {
+            padding: 11px 28px;
+            background-color: white;
+            color: #4a90e2;
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f0f6ff;
+        }
+    </style>
 </head>
 <body>
 
-    <h1>Fitness Tracker</h1>
-    <p>Track your workouts and progress ooooo</p>
-
-    <br>
-
-    <a href="{{ url_for('login') }}">
-        <button>Login</button>
-    </a>
-
-    <a href="{{ url_for('signup') }}">
-        <button>Sign Up</button>
-    </a>
+    <div class="hero">
+        <h1>Fitness Tracker</h1>
+        <p>Track your workouts and progress ooooo</p>
+        <div class="buttons">
+            <a href="{{ url_for('login') }}">
+                <button class="btn-primary">Login</button>
+            </a>
+            <a href="{{ url_for('signup') }}">
+                <button class="btn-secondary">Sign Up</button>
+            </a>
+        </div>
+    </div>
 
 </body>
 </html>

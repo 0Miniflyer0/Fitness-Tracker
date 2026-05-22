@@ -1,1 +1,5 @@
-sign up test: http://127.0.0.1:5000/signup 
+python app.py
+
+test account credetials:
+User: Testacc
+Pass: Testpass
