@@ -166,6 +166,12 @@
             background-color: #f9f9f9;
         }
 
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
         .no-workouts {
             text-align: center;
             color: #888;
@@ -180,7 +186,7 @@
 </head>
 <body>
 
-    <!-- Top Bar -->
+    <!-- top -->
     <div class="top-bar">
         <h2>💪 Welcome, {{ current_user.username }}!</h2>
         <div class="top-bar-buttons">
@@ -189,7 +195,7 @@
         </div>
     </div>
 
-    <!-- Filter Card -->
+    <!-- Filter -->
     <div class="filter-card">
         <h3>Filter Workouts</h3>
         <form method="GET" action="{{ url_for('dashboard') }}">
@@ -210,7 +216,7 @@
         </form>
     </div>
 
-    <!-- Workouts -->
+  <!-- anything pertaining to workout -->
     <h3 style="color: #333; margin-bottom: 16px;">Your Workouts</h3>
 
     {% if workouts %}
@@ -233,7 +239,10 @@
                     </tr>
                     {% endfor %}
                 </table>
-                <a href="{{ url_for('delete_workout', workout_id=workout.id) }}" class="btn-danger">Delete</a>
+                <div class="card-actions">
+                    <a href="{{ url_for('edit_workout', workout_id=workout.id) }}" class="btn-secondary">✏️ Edit</a>
+                    <a href="{{ url_for('delete_workout', workout_id=workout.id) }}" class="btn-danger">🗑️ Delete</a>
+                </div>
             </div>
         {% endfor %}
     {% else %}

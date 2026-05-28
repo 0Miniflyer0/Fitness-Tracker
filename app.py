@@ -55,7 +55,6 @@ def login():
 def dashboard():
     workouts = Workout.query.filter_by(user_id=current_user.id)
 
-    # this should filter by date range
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
     month = request.args.get("month")
@@ -100,7 +99,41 @@ def add_workout():
 
         db.session.commit()
         return redirect(url_for("dashboard"))
-    return render_template("add_workout.html")
+    return render_template("add_workout.html", today=date.today())
+
+@app.route("/edit_workout/<int:workout_id>", methods=["GET", "POST"])
+@login_required
+def edit_workout(workout_id):
+    workout = Workout.query.get_or_404(workout_id)
+    if workout.user_id != current_user.id:
+        return "Not allowed", 403
+
+    if request.method == "POST":
+        workout.name = request.form["workout_name"]
+        workout.date = request.form["workout_date"]
+
+        Exercise.query.filter_by(workout_id=workout.id).delete()
+
+        exercise_names = request.form.getlist("exercise_name")
+        sets_list = request.form.getlist("sets")
+        reps_list = request.form.getlist("reps")
+        weights_list = request.form.getlist("weight")
+
+        for i in range(len(exercise_names)):
+            if exercise_names[i]:
+                ex = Exercise(
+                    name=exercise_names[i],
+                    sets=int(sets_list[i]),
+                    reps=int(reps_list[i]),
+                    weight=float(weights_list[i]) if weights_list[i] else None,
+                    workout_id=workout.id
+                )
+                db.session.add(ex)
+
+        db.session.commit()
+        return redirect(url_for("dashboard"))
+
+    return render_template("edit_workout.html", workout=workout)
 
 @app.route("/delete_workout/<int:workout_id>")
 @login_required

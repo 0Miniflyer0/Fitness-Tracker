@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add Workout</title>
+    <title>Edit Workout</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: Arial, sans-serif;
@@ -25,10 +21,7 @@
             margin: 0 auto;
         }
 
-        .card h2 {
-            color: #333;
-            margin-bottom: 24px;
-        }
+        .card h2 { color: #333; margin-bottom: 24px; }
 
         label {
             font-size: 14px;
@@ -53,16 +46,9 @@
             border-color: #4a90e2;
         }
 
-        h3 {
-            color: #333;
-            margin-bottom: 14px;
-        }
+        h3 { color: #333; margin-bottom: 14px; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 16px;
-        }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
 
         th {
             background-color: #4a90e2;
@@ -72,10 +58,7 @@
             font-size: 14px;
         }
 
-        td {
-            padding: 8px 6px;
-            border-bottom: 1px solid #eee;
-        }
+        td { padding: 8px 6px; border-bottom: 1px solid #eee; }
 
         td input {
             width: 100%;
@@ -85,10 +68,7 @@
             font-size: 14px;
         }
 
-        td input:focus {
-            outline: none;
-            border-color: #4a90e2;
-        }
+        td input:focus { outline: none; border-color: #4a90e2; }
 
         .btn-primary {
             padding: 10px 22px;
@@ -100,9 +80,7 @@
             cursor: pointer;
         }
 
-        .btn-primary:hover {
-            background-color: #357abd;
-        }
+        .btn-primary:hover { background-color: #357abd; }
 
         .btn-secondary {
             padding: 10px 22px;
@@ -114,9 +92,7 @@
             cursor: pointer;
         }
 
-        .btn-secondary:hover {
-            background-color: #f0f6ff;
-        }
+        .btn-secondary:hover { background-color: #f0f6ff; }
 
         .button-row {
             display: flex;
@@ -133,22 +109,19 @@
             text-decoration: none;
         }
 
-        .back-link:hover {
-            text-decoration: underline;
-        }
+        .back-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-
     <div class="card">
-        <h2>💪 Log a Workout</h2>
+        <h2>✏️ Edit Workout</h2>
         <form method="POST">
 
-            <label>Workout Name (e.g. "Leg Day")</label>
-            <input type="text" name="workout_name" required>
+            <label>Workout Name</label>
+            <input type="text" name="workout_name" value="{{ workout.name }}" required>
 
             <label>Date</label>
-            <input type="date" name="workout_date" value="{{ today }}" required>
+            <input type="date" name="workout_date" value="{{ workout.date }}" required>
 
             <h3>Exercises</h3>
             <table id="exercise-table">
@@ -158,21 +131,22 @@
                     <th>Reps</th>
                     <th>Weight (optional)</th>
                 </tr>
+                {% for ex in workout.exercises %}
                 <tr>
-                    <td><input type="text" name="exercise_name" placeholder="e.g. Bench Press"></td>
-                    <td><input type="number" name="sets" min="1" placeholder="3"></td>
-                    <td><input type="number" name="reps" min="1" placeholder="10"></td>
-                    <td><input type="number" name="weight" step="0.5" placeholder="135"></td>
+                    <td><input type="text" name="exercise_name" value="{{ ex.name }}"></td>
+                    <td><input type="number" name="sets" min="1" value="{{ ex.sets }}"></td>
+                    <td><input type="number" name="reps" min="1" value="{{ ex.reps }}"></td>
+                    <td><input type="number" name="weight" step="0.5" value="{{ ex.weight if ex.weight else '' }}"></td>
                 </tr>
+                {% endfor %}
             </table>
 
             <div class="button-row">
                 <button type="button" class="btn-secondary" onclick="addRow()">+ Add Exercise</button>
-                <button type="submit" class="btn-primary">Save Workout</button>
+                <button type="submit" class="btn-primary">Save Changes</button>
             </div>
 
         </form>
-
         <a class="back-link" href="{{ url_for('dashboard') }}">← Back to Dashboard</a>
     </div>
 
