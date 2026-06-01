@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from models import db, User, Workout, Exercise
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
@@ -31,10 +31,12 @@ def signup():
         password = generate_password_hash(request.form["password"])
         existing_user = User.query.filter_by(username=username).first()
         if existing_user:
-            return "Username already exists"
+            flash("Username already taken, try another one!", "error")
+            return redirect(url_for("signup"))
         new_user = User(username=username, password=password)
         db.session.add(new_user)
         db.session.commit()
+        flash("Account created! Please log in.", "success")
         return redirect(url_for("login"))
     return render_template("signup.html")
 
@@ -46,8 +48,10 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
+            flash(f"Welcome back, {username}!", "success")
             return redirect(url_for("dashboard"))
-        return "Invalid username or password"
+        flash("Invalid username or password", "error")
+        return render_template("login.html")
     return render_template("login.html")
 
 @app.route("/dashboard")
@@ -98,6 +102,7 @@ def add_workout():
                 db.session.add(ex)
 
         db.session.commit()
+        flash("Workout saved!", "success")
         return redirect(url_for("dashboard"))
     return render_template("add_workout.html", today=date.today())
 
@@ -131,6 +136,7 @@ def edit_workout(workout_id):
                 db.session.add(ex)
 
         db.session.commit()
+        flash("Workout updated!", "success")
         return redirect(url_for("dashboard"))
 
     return render_template("edit_workout.html", workout=workout)
@@ -144,6 +150,7 @@ def delete_workout(workout_id):
     Exercise.query.filter_by(workout_id=workout.id).delete()
     db.session.delete(workout)
     db.session.commit()
+    flash("Workout deleted.", "error")
     return redirect(url_for("dashboard"))
 
 @app.route("/logout")

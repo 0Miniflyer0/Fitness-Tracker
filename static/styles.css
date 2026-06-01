@@ -1,0 +1,19 @@
+.flash {
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 20px;
+    text-align: center;
+}
+
+.flash.success {
+    background-color: #e6f4ea;
+    color: #2d7a3a;
+    border: 1px solid #a8d5b0;
+}
+
+.flash.error {
+    background-color: #fdecea;
+    color: #b00020;
+    border: 1px solid #f5c2c7;
+}

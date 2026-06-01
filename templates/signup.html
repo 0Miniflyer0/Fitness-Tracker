@@ -81,6 +81,13 @@
 
     <div class="card">
         <h2>Create Account!</h2>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
         <form method="POST">
             <input name="username" placeholder="Username" required>
             <input name="password" type="password" placeholder="Password" required>
@@ -88,6 +95,5 @@
         </form>
         <a class="login-link" href="/login">Already have an account? Log in here</a>
     </div>
-
 </body>
 </html>
