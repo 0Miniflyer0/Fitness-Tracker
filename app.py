@@ -26,7 +26,9 @@ def home():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-    if request.method == "POST":
+     if current_user.is_authenticated:
+         return redirect(url_for("dashboard"))
+     if request.method == "POST":
         username = request.form["username"]
         password = generate_password_hash(request.form["password"])
         existing_user = User.query.filter_by(username=username).first()
@@ -38,10 +40,12 @@ def signup():
         db.session.commit()
         flash("Account created! Please log in.", "success")
         return redirect(url_for("login"))
-    return render_template("signup.html")
+     return render_template("signup.html")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated:
+     return redirect(url_for("dashboard"))
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -53,6 +57,7 @@ def login():
         flash("Invalid username or password", "error")
         return render_template("login.html")
     return render_template("login.html")
+
 
 @app.route("/dashboard")
 @login_required
@@ -157,6 +162,40 @@ def delete_workout(workout_id):
 def logout():
     logout_user()
     return redirect(url_for("login"))
+
+@app.route("/progress_data")
+@login_required
+def progress_data():
+    # Weight over time per exercise
+    exercises = db.session.query(
+        Exercise.name,
+        Workout.date,
+        db.func.max(Exercise.weight)
+    ).join(Workout).filter(
+        Workout.user_id == current_user.id,
+        Exercise.weight != None
+    ).group_by(Exercise.name, Workout.date).order_by(Workout.date).all()
+
+    # Build exercise weight data
+    exercise_data = {}
+    for name, date, weight in exercises:
+        if name not in exercise_data:
+            exercise_data[name] = {"dates": [], "weights": []}
+        exercise_data[name]["dates"].append(date)
+        exercise_data[name]["weights"].append(weight)
+
+    workouts = Workout.query.filter_by(user_id=current_user.id).order_by(Workout.date).all()
+    volume_data = {"dates": [], "volumes": []}
+    for workout in workouts:
+        total = sum(
+            (ex.sets * ex.reps * ex.weight)
+            for ex in workout.exercises if ex.weight
+        )
+        if total > 0:
+            volume_data["dates"].append(workout.date)
+            volume_data["volumes"].append(total)
+
+    return {"exercise_data": exercise_data, "volume_data": volume_data}
 
 with app.app_context():
     db.create_all()
