@@ -179,19 +179,6 @@
             margin-top: 40px;
         }
 
-        .chart-select {
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 14px;
-            min-width: 200px;
-        }
-
-        .chart-select:focus {
-            outline: none;
-            border-color: #4a90e2;
-        }
-
         a {
             text-decoration: none;
         }
@@ -216,26 +203,6 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-
-    <!-- Charts -->
-    <div class="filter-card">
-        <h3>📈 Progress Charts</h3>
-
-        <div style="margin-bottom: 30px;">
-            <label style="font-size: 14px; color: #555;">Select Exercise to see weight progress:</label><br><br>
-            <select id="exercise-select" class="chart-select">
-                <option value="">-- Pick an exercise --</option>
-            </select>
-            <canvas id="weightChart" height="100" style="margin-top: 16px;"></canvas>
-        </div>
-
-        <hr style="border: none; border-top: 1px solid #eee; margin-bottom: 24px;">
-
-        <div>
-            <h4 style="color: #333; margin-bottom: 16px;">Total Workout Volume Over Time</h4>
-            <canvas id="volumeChart" height="100"></canvas>
-        </div>
-    </div>
 
     <!-- Filter Card -->
     <div class="filter-card">
@@ -268,16 +235,24 @@
                 <table>
                     <tr>
                         <th>Exercise</th>
-                        <th>Sets</th>
-                        <th>Reps</th>
-                        <th>Weight (lbs)</th>
+                        <th>Type</th>
+                        <th>Details</th>
                     </tr>
                     {% for ex in workout.exercises %}
                     <tr>
                         <td>{{ ex.name }}</td>
-                        <td>{{ ex.sets }}</td>
-                        <td>{{ ex.reps }}</td>
-                        <td>{{ ex.weight if ex.weight else '—' }}</td>
+                        <td>{{ ex.exercise_type | capitalize }}</td>
+                        <td>
+                            {% if ex.exercise_type == 'cardio' %}
+                                {{ ex.duration or '—' }} mins |
+                                {{ ex.distance or '—' }} miles |
+                                {{ ex.calories or '—' }} cal
+                            {% else %}
+                                {{ ex.sets or '—' }} sets ×
+                                {{ ex.reps or '—' }} reps @
+                                {{ ex.weight or '—' }} lbs
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </table>
@@ -292,84 +267,4 @@
     {% endif %}
 
 </body>
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script>
-    let weightChart = null;
-
-    fetch("/progress_data")
-        .then(res => res.json())
-        .then(data => {
-            const exerciseData = data.exercise_data;
-            const volumeData = data.volume_data;
-
-            // Populate exercise dropdown
-            const select = document.getElementById("exercise-select");
-            Object.keys(exerciseData).forEach(name => {
-                const option = document.createElement("option");
-                option.value = name;
-                option.textContent = name;
-                select.appendChild(option);
-            });
-
-            // Volume chart
-            const vCtx = document.getElementById("volumeChart").getContext("2d");
-            new Chart(vCtx, {
-                type: "line",
-                data: {
-                    labels: volumeData.dates,
-                    datasets: [{
-                        label: "Total Volume (lbs)",
-                        data: volumeData.volumes,
-                        borderColor: "#4a90e2",
-                        backgroundColor: "rgba(74,144,226,0.1)",
-                        tension: 0.3,
-                        fill: true,
-                        pointRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: { ticks: { font: { size: 12 } } },
-                        y: { beginAtZero: false }
-                    }
-                }
-            });
-
-            //should add weight chart on exercise selection
-            select.addEventListener("change", () => {
-                const selected = select.value;
-                if (!selected) return;
-
-                const ex = exerciseData[selected];
-                if (weightChart) weightChart.destroy();
-
-                const wCtx = document.getElementById("weightChart").getContext("2d");
-                weightChart = new Chart(wCtx, {
-                    type: "line",
-                    data: {
-                        labels: ex.dates,
-                        datasets: [{
-                            label: `${selected} — Max Weight (lbs)`,
-                            data: ex.weights,
-                            borderColor: "#e2784a",
-                            backgroundColor: "rgba(226,120,74,0.1)",
-                            tension: 0.3,
-                            fill: true,
-                            pointRadius: 5
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            x: { ticks: { font: { size: 12 } } },
-                            y: { beginAtZero: false }
-                        }
-                    }
-                });
-            });
-        });
-</script>
 </html>

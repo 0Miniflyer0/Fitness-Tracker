@@ -20,15 +20,27 @@ login_manager.login_view = "login"
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def safe_int(lst, idx):
+    try:
+        return int(lst[idx]) if idx < len(lst) and lst[idx] else None
+    except:
+        return None
+
+def safe_float(lst, idx):
+    try:
+        return float(lst[idx]) if idx < len(lst) and lst[idx] else None
+    except:
+        return None
+
 @app.route("/")
 def home():
     return render_template("index.html")
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-     if current_user.is_authenticated:
-         return redirect(url_for("dashboard"))
-     if request.method == "POST":
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard"))
+    if request.method == "POST":
         username = request.form["username"]
         password = generate_password_hash(request.form["password"])
         existing_user = User.query.filter_by(username=username).first()
@@ -40,12 +52,12 @@ def signup():
         db.session.commit()
         flash("Account created! Please log in.", "success")
         return redirect(url_for("login"))
-     return render_template("signup.html")
+    return render_template("signup.html")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-     return redirect(url_for("dashboard"))
+        return redirect(url_for("dashboard"))
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -57,7 +69,6 @@ def login():
         flash("Invalid username or password", "error")
         return render_template("login.html")
     return render_template("login.html")
-
 
 @app.route("/dashboard")
 @login_required
@@ -91,17 +102,26 @@ def add_workout():
         db.session.flush()
 
         exercise_names = request.form.getlist("exercise_name")
+        exercise_types = request.form.getlist("exercise_type")
         sets_list = request.form.getlist("sets")
         reps_list = request.form.getlist("reps")
         weights_list = request.form.getlist("weight")
+        durations_list = request.form.getlist("duration")
+        distances_list = request.form.getlist("distance")
+        calories_list = request.form.getlist("calories")
 
         for i in range(len(exercise_names)):
             if exercise_names[i]:
+                ex_type = exercise_types[i]
                 ex = Exercise(
                     name=exercise_names[i],
-                    sets=int(sets_list[i]),
-                    reps=int(reps_list[i]),
-                    weight=float(weights_list[i]) if weights_list[i] else None,
+                    exercise_type=ex_type,
+                    sets=safe_int(sets_list, i) if ex_type == "strength" else None,
+                    reps=safe_int(reps_list, i) if ex_type == "strength" else None,
+                    weight=safe_float(weights_list, i) if ex_type == "strength" else None,
+                    duration=safe_float(durations_list, i) if ex_type == "cardio" else None,
+                    distance=safe_float(distances_list, i) if ex_type == "cardio" else None,
+                    calories=safe_float(calories_list, i) if ex_type == "cardio" else None,
                     workout_id=new_workout.id
                 )
                 db.session.add(ex)
@@ -125,17 +145,26 @@ def edit_workout(workout_id):
         Exercise.query.filter_by(workout_id=workout.id).delete()
 
         exercise_names = request.form.getlist("exercise_name")
+        exercise_types = request.form.getlist("exercise_type")
         sets_list = request.form.getlist("sets")
         reps_list = request.form.getlist("reps")
         weights_list = request.form.getlist("weight")
+        durations_list = request.form.getlist("duration")
+        distances_list = request.form.getlist("distance")
+        calories_list = request.form.getlist("calories")
 
         for i in range(len(exercise_names)):
             if exercise_names[i]:
+                ex_type = exercise_types[i]
                 ex = Exercise(
                     name=exercise_names[i],
-                    sets=int(sets_list[i]),
-                    reps=int(reps_list[i]),
-                    weight=float(weights_list[i]) if weights_list[i] else None,
+                    exercise_type=ex_type,
+                    sets=safe_int(sets_list, i) if ex_type == "strength" else None,
+                    reps=safe_int(reps_list, i) if ex_type == "strength" else None,
+                    weight=safe_float(weights_list, i) if ex_type == "strength" else None,
+                    duration=safe_float(durations_list, i) if ex_type == "cardio" else None,
+                    distance=safe_float(distances_list, i) if ex_type == "cardio" else None,
+                    calories=safe_float(calories_list, i) if ex_type == "cardio" else None,
                     workout_id=workout.id
                 )
                 db.session.add(ex)
@@ -162,40 +191,6 @@ def delete_workout(workout_id):
 def logout():
     logout_user()
     return redirect(url_for("login"))
-
-@app.route("/progress_data")
-@login_required
-def progress_data():
-    # Weight over time per exercise
-    exercises = db.session.query(
-        Exercise.name,
-        Workout.date,
-        db.func.max(Exercise.weight)
-    ).join(Workout).filter(
-        Workout.user_id == current_user.id,
-        Exercise.weight != None
-    ).group_by(Exercise.name, Workout.date).order_by(Workout.date).all()
-
-    # Build exercise weight data
-    exercise_data = {}
-    for name, date, weight in exercises:
-        if name not in exercise_data:
-            exercise_data[name] = {"dates": [], "weights": []}
-        exercise_data[name]["dates"].append(date)
-        exercise_data[name]["weights"].append(weight)
-
-    workouts = Workout.query.filter_by(user_id=current_user.id).order_by(Workout.date).all()
-    volume_data = {"dates": [], "volumes": []}
-    for workout in workouts:
-        total = sum(
-            (ex.sets * ex.reps * ex.weight)
-            for ex in workout.exercises if ex.weight
-        )
-        if total > 0:
-            volume_data["dates"].append(workout.date)
-            volume_data["volumes"].append(total)
-
-    return {"exercise_data": exercise_data, "volume_data": volume_data}
 
 with app.app_context():
     db.create_all()

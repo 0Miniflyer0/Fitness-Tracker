@@ -48,27 +48,50 @@
 
         h3 { color: #333; margin-bottom: 14px; }
 
-        table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
-
-        th {
-            background-color: #4a90e2;
-            color: white;
-            padding: 10px;
-            text-align: left;
-            font-size: 14px;
+        .exercise-row {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 12px;
+            background-color: #fafafa;
         }
 
-        td { padding: 8px 6px; border-bottom: 1px solid #eee; }
-
-        td input {
+        .exercise-row input[type="number"],
+        .exercise-row input[type="text"] {
             width: 100%;
             padding: 8px 10px;
             border: 1px solid #ccc;
             border-radius: 6px;
             font-size: 14px;
+            margin-bottom: 0;
         }
 
-        td input:focus { outline: none; border-color: #4a90e2; }
+        .chart-select {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 140px;
+        }
+
+        .chart-select:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        .strength-fields {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cardio-fields {
+            display: flex;
+            gap: 10px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
 
         .btn-primary {
             padding: 10px 22px;
@@ -98,7 +121,7 @@
             display: flex;
             gap: 12px;
             align-items: center;
-            margin-top: 8px;
+            margin-top: 16px;
         }
 
         .back-link {
@@ -124,25 +147,34 @@
             <input type="date" name="workout_date" value="{{ workout.date }}" required>
 
             <h3>Exercises</h3>
-            <table id="exercise-table">
-                <tr>
-                    <th>Exercise</th>
-                    <th>Sets</th>
-                    <th>Reps</th>
-                    <th>Weight (optional)</th>
-                </tr>
+            <div id="exercise-list">
                 {% for ex in workout.exercises %}
-                <tr>
-                    <td><input type="text" name="exercise_name" value="{{ ex.name }}"></td>
-                    <td><input type="number" name="sets" min="1" value="{{ ex.sets }}"></td>
-                    <td><input type="number" name="reps" min="1" value="{{ ex.reps }}"></td>
-                    <td><input type="number" name="weight" step="0.5" value="{{ ex.weight if ex.weight else '' }}"></td>
-                </tr>
+                <div class="exercise-row" id="exercise-{{ loop.index0 }}">
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                        <input type="text" name="exercise_name" value="{{ ex.name }}" placeholder="Exercise name" style="flex:1;">
+                        <select name="exercise_type" class="chart-select" onchange="toggleType(this, 'exercise-{{ loop.index0 }}')">
+                            <option value="strength" {% if ex.exercise_type == 'strength' %}selected{% endif %}>Strength</option>
+                            <option value="cardio" {% if ex.exercise_type == 'cardio' %}selected{% endif %}>Cardio</option>
+                        </select>
+                    </div>
+
+                    <div class="strength-fields {% if ex.exercise_type != 'strength' %}hidden{% endif %}">
+                        <input type="number" name="sets" min="1" placeholder="Sets" value="{{ ex.sets or '' }}" style="flex:1;">
+                        <input type="number" name="reps" min="1" placeholder="Reps" value="{{ ex.reps or '' }}" style="flex:1;">
+                        <input type="number" name="weight" step="0.5" placeholder="Weight (lbs)" value="{{ ex.weight or '' }}" style="flex:1;">
+                    </div>
+
+                    <div class="cardio-fields {% if ex.exercise_type != 'cardio' %}hidden{% endif %}">
+                        <input type="number" name="duration" step="0.5" placeholder="Duration (mins)" value="{{ ex.duration or '' }}" style="flex:1;">
+                        <input type="number" name="distance" step="0.01" placeholder="Distance (miles)" value="{{ ex.distance or '' }}" style="flex:1;">
+                        <input type="number" name="calories" step="1" placeholder="Calories burned" value="{{ ex.calories or '' }}" style="flex:1;">
+                    </div>
+                </div>
                 {% endfor %}
-            </table>
+            </div>
 
             <div class="button-row">
-                <button type="button" class="btn-secondary" onclick="addRow()">+ Add Exercise</button>
+                <button type="button" class="btn-secondary" onclick="addExercise()">+ Add Exercise</button>
                 <button type="submit" class="btn-primary">Save Changes</button>
             </div>
 
@@ -151,15 +183,49 @@
     </div>
 
     <script>
-        function addRow() {
-            const table = document.getElementById("exercise-table");
-            const row = table.insertRow();
-            row.innerHTML = `
-                <td><input type="text" name="exercise_name" placeholder="e.g. Squat"></td>
-                <td><input type="number" name="sets" min="1" placeholder="3"></td>
-                <td><input type="number" name="reps" min="1" placeholder="10"></td>
-                <td><input type="number" name="weight" step="0.5" placeholder="135"></td>
+        let count = document.querySelectorAll(".exercise-row").length;
+
+        function toggleType(select, rowId) {
+            const row = document.getElementById(rowId);
+            const strengthFields = row.querySelector(".strength-fields");
+            const cardioFields = row.querySelector(".cardio-fields");
+
+            if (select.value === "cardio") {
+                strengthFields.classList.add("hidden");
+                cardioFields.classList.remove("hidden");
+            } else {
+                strengthFields.classList.remove("hidden");
+                cardioFields.classList.add("hidden");
+            }
+        }
+
+        function addExercise() {
+            const id = `exercise-${count}`;
+            const div = document.createElement("div");
+            div.className = "exercise-row";
+            div.id = id;
+            div.style.marginTop = "16px";
+            div.innerHTML = `
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                    <input type="text" name="exercise_name" placeholder="Exercise name" style="flex:1; padding:8px 10px; border:1px solid #ccc; border-radius:6px; font-size:14px;">
+                    <select name="exercise_type" class="chart-select" onchange="toggleType(this, '${id}')">
+                        <option value="strength">Strength</option>
+                        <option value="cardio">Cardio</option>
+                    </select>
+                </div>
+                <div class="strength-fields">
+                    <input type="number" name="sets" min="1" placeholder="Sets" style="flex:1; padding:8px 10px; border:1px solid #ccc; border-radius:6px; font-size:14px;">
+                    <input type="number" name="reps" min="1" placeholder="Reps" style="flex:1; padding:8px 10px; border:1px solid #ccc; border-radius:6px; font-size:14px;">
+                    <input type="number" name="weight" step="0.5" placeholder="Weight (lbs)" style="flex:1; padding:8px 10px; border:1px solid #ccc; border-radius:6px; font-size:14px;">
+                </div>
+                <div class="cardio-fields hidden">
+                    <input type="number" name="duration" step="0.5" placeholder="Duration (mins)" style="flex:1; padding:8px 10px; border:1px solid #ccc; border-radius:6px; font-size:14px;">
+                    <input type="number" name="distance" step="0.01" placeholder="Distance (miles)" style="flex:1; padding:8px 10px; border:1px solid #ccc; border-radius:6px; font-size:14px;">
+                    <input type="number" name="calories" step="1" placeholder="Calories burned" style="flex:1; padding:8px 10px; border:1px solid #ccc; border-radius:6px; font-size:14px;">
+                </div>
             `;
+            document.getElementById("exercise-list").appendChild(div);
+            count++;
         }
     </script>
 </body>
