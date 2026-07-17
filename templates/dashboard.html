@@ -209,18 +209,11 @@
         <h3>Filter Workouts</h3>
         <form method="GET" action="{{ url_for('dashboard') }}">
             <div class="filter-row">
-                <label>Date Range:</label>
-                <input type="date" name="start_date"> to
-                <input type="date" name="end_date">
-                <button type="submit" class="btn-primary">Filter</button>
-            </div>
-            <div class="filter-row">
-                <label>By Month:</label>
-                <input type="month" name="month">
-                <button type="submit" class="btn-primary">Filter</button>
-            </div>
-            <div class="filter-row">
-                <a href="{{ url_for('dashboard') }}" class="btn-secondary">Clear Filters</a>
+            <label>Date Range:</label>
+            <input type="date" name="start_date"> to
+            <input type="date" name="end_date">
+            <button type="submit" class="btn-primary">Filter</button>
+            <a href="{{ url_for('dashboard') }}" class="btn-secondary">Clear</a>
             </div>
         </form>
     </div>
@@ -231,7 +224,7 @@
     {% if workouts %}
         {% for workout in workouts %}
             <div class="workout-card">
-                <h4>{{ workout.name }} — {{ workout.date }}</h4>
+                <h4>{{ workout.name }} — {{ workout.date[5:7] }}-{{ workout.date[8:10] }}-{{ workout.date[0:4] }}</h4>
                 <table>
                     <tr>
                         <th>Exercise</th>

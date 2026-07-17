@@ -74,18 +74,11 @@ def login():
 @login_required
 def dashboard():
     workouts = Workout.query.filter_by(user_id=current_user.id)
-
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
-    month = request.args.get("month")
-
     if start_date and end_date:
         workouts = workouts.filter(Workout.date >= start_date, Workout.date <= end_date)
-    elif month:
-        workouts = workouts.filter(Workout.date.like(f"{month}%"))
-
     workouts = workouts.order_by(Workout.date.desc()).all()
-
     return render_template("dashboard.html", workouts=workouts, today=date.today())
 
 @app.route("/add_workout", methods=["GET", "POST"])
